@@ -12,6 +12,12 @@ def main():
     st.header("Ask your PDF 📚")
 
     openai_api_key = st.text_input("Enter your OpenAI API Key:")
+    cost_placeholder = st.empty()  # Create a placeholder for the cost display.
+
+    if 'total_cost' not in st.session_state:
+        st.session_state.total_cost = 0
+
+    cost_placeholder.text(f"Total Cost for this session (USD): {st.session_state.total_cost:.2f}")
 
     if openai_api_key:
         pdf = st.file_uploader("Upload your PDF", type=["pdf"])
@@ -32,7 +38,7 @@ def main():
             chunks = text_splitter.split_text(text)
 
             # create embeddings
-            embeddings = OpenAIEmbeddings()
+            embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
             knowledge_base = FAISS.from_texts(chunks, embeddings)
 
             # show user inpout
@@ -44,9 +50,12 @@ def main():
 
                 with get_openai_callback() as cb:
                     response = chain.run(input_documents=docs, question=user_question)
-                    print(cb)
+                    st.session_state.total_cost += cb.total_cost
 
                 st.write(response)
+
+    # Update the cost display.
+    cost_placeholder.text(f"Total Cost for this session (USD): {st.session_state.total_cost:.2f}")
 
 if __name__ == '__main__':
     main()
