@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: langchain-pdf-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: langchain-pdf-app
+  template:
+    metadata:
+      labels:
+        app: langchain-pdf-app
+    spec:
+      containers:
+      - name: langchain-pdf-app
+        image: yliabc/langchain-pdf:latest
+        ports:
+        - containerPort: 8501
